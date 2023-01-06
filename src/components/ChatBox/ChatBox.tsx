@@ -1,46 +1,35 @@
-import React, { useEffect, useState } from "react";
-import { io } from "socket.io-client";
+import React, { useCallback, useEffect, useState } from "react";
+import useWebSocket, { ReadyState } from "react-use-websocket";
+import { isContext } from "vm";
 import { ChatBoxInput } from "../ChatBoxInput/ChatBoxInput";
 import { ChatMessage } from "../ChatMessage/ChatMessage";
 
-const socket = io("ws://127.0.0.1:8080", {
-  transports: ["websocket"],
-  path: "/ws",
-  reconnectionDelay: 500,
-  // auth: {
-  //   token: "123"
-  // },
-});
-
 export const ChatBox = () => {
+  const [socketUrl, setSocketUrl] = useState(
+    "wss://socketsbay.com/wss/v2/1/demo/"
+  );
+  const [messageHistory, setMessageHistory] = useState<any>([]);
   const [chatInput, setChatInput] = useState("");
 
-  const [isConnected, setIsConnected] = useState(socket.connected);
-  const [lastMessage, setLastMessage] = useState([]);
+  const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl);
 
   useEffect(() => {
-    socket.on(`connnect`, () => {
-      setIsConnected(true);
-    });
+    if (lastMessage !== null) {
+      setMessageHistory([...messageHistory, lastMessage.data]);
+    }
+  }, [lastMessage, setMessageHistory]);
 
-    socket.on(`disconnect`, () => {
-      setIsConnected(false);
-    });
-
-    socket.on(`message`, (message) => {
-      setLastMessage(message);
-    });
-
-    return () => {
-      socket.off(`connect`);
-      socket.off(`disconnect`);
-      socket.off(`message`);
-    };
-  }, []);
+  const connectionStatus = {
+    [ReadyState.CONNECTING]: "Connecting",
+    [ReadyState.OPEN]: "Open",
+    [ReadyState.CLOSING]: "Closing",
+    [ReadyState.CLOSED]: "Closed",
+    [ReadyState.UNINSTANTIATED]: "Uninstantiated",
+  }[readyState];
 
   const submitMessage = () => {
+    sendMessage(chatInput);
     setChatInput("");
-    socket.emit("message", chatInput);
   };
 
   return (
