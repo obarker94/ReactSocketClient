@@ -8,6 +8,7 @@ export const ChatBox = () => {
   const [socketUrl, setSocketUrl] = useState(
     "wss://socketsbay.com/wss/v2/1/demo/"
   );
+
   const [messageHistory, setMessageHistory] = useState<any>([]);
   const [chatInput, setChatInput] = useState("");
 
@@ -29,6 +30,7 @@ export const ChatBox = () => {
 
   const submitMessage = () => {
     sendMessage(chatInput);
+    setMessageHistory([...messageHistory, chatInput]);
     setChatInput("");
   };
 
@@ -36,9 +38,9 @@ export const ChatBox = () => {
     <div className="grid w-full place-items-center">
       <div className="relative w-1/2 rounded-lg bg-white/90 shadow-lg">
         <div className="max-h-[480px] min-h-[480px] w-full overflow-y-auto py-4">
-          <ChatMessage />
-          <ChatMessage />
-          <ChatMessage />
+          {messageHistory.map((message: any, index: number) => (
+            <ChatMessage key={index} text={message} />
+          ))}
         </div>
         <ChatBoxInput
           setInput={setChatInput}
