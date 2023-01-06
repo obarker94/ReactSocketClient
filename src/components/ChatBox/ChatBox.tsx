@@ -1,8 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import { ChatBoxInput } from "../ChatBoxInput/ChatBoxInput";
 import { ChatMessage } from "../ChatMessage/ChatMessage";
 
 export const ChatBox = () => {
+  const [chatInput, setChatInput] = useState("");
+
+  const submitMessage = () => {
+    setChatInput("");
+    alert(chatInput);
+  };
+
   return (
     <div className="grid w-full place-items-center">
       <div className="relative w-1/2 rounded-lg bg-white/90 shadow-lg">
@@ -11,7 +18,11 @@ export const ChatBox = () => {
           <ChatMessage />
           <ChatMessage />
         </div>
-        <ChatBoxInput />
+        <ChatBoxInput
+          setInput={setChatInput}
+          chatInput={chatInput}
+          submitMessage={submitMessage}
+        />
       </div>
     </div>
   );
