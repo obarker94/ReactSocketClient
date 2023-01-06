@@ -1,13 +1,46 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { io } from "socket.io-client";
 import { ChatBoxInput } from "../ChatBoxInput/ChatBoxInput";
 import { ChatMessage } from "../ChatMessage/ChatMessage";
+
+const socket = io("ws://127.0.0.1:8080", {
+  transports: ["websocket"],
+  path: "/ws",
+  reconnectionDelay: 500,
+  // auth: {
+  //   token: "123"
+  // },
+});
 
 export const ChatBox = () => {
   const [chatInput, setChatInput] = useState("");
 
+  const [isConnected, setIsConnected] = useState(socket.connected);
+  const [lastMessage, setLastMessage] = useState([]);
+
+  useEffect(() => {
+    socket.on(`connnect`, () => {
+      setIsConnected(true);
+    });
+
+    socket.on(`disconnect`, () => {
+      setIsConnected(false);
+    });
+
+    socket.on(`message`, (message) => {
+      setLastMessage(message);
+    });
+
+    return () => {
+      socket.off(`connect`);
+      socket.off(`disconnect`);
+      socket.off(`message`);
+    };
+  }, []);
+
   const submitMessage = () => {
     setChatInput("");
-    alert(chatInput);
+    socket.emit("message", chatInput);
   };
 
   return (
